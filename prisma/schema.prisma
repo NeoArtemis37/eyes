@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Registre réel des opérateurs de veille (remplace l'ancien bouton DEMO).
+// Chaque prise de poste est journalisée et alimente la piste d'audit des
+// agents HORUS (deconfliction, cite l'opérateur dans les cues).
+model Operator {
+  id        String      @id @default(cuid())
+  callsign  String      @unique
+  watchLogs WatchLog[]
+  createdAt DateTime    @default(now())
+  lastSeen  DateTime    @default(now())
+}
+
+model WatchLog {
+  id         String   @id @default(cuid())
+  operatorId String?
+  callsign   String
+  action     String
+  detail     String?
+  createdAt  DateTime @default(now())
+  operator   Operator? @relation(fields: [operatorId], references: [id])
+  @@index([createdAt])
+}
